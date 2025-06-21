@@ -2,3 +2,5 @@ mcp_server/.venv/
 mcp_client/.venv/
 mcp_server/.env
 mcp_client/.env
+mcp_client/*/__pycache__/
+mcp_server/*/__pycache__/
