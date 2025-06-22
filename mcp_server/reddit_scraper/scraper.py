@@ -3,7 +3,8 @@ from httpx import BasicAuth, RequestError
 import asyncio
 from dotenv import load_dotenv
 import os
-from reddit_scraper.post import Post
+from reddit_scraper.structures.post import Post
+from reddit_scraper.structures.comment import Comment
 
 load_dotenv()
 
@@ -77,12 +78,51 @@ class Scraper:
                 traceback.print_exc()
                 return str(e)
 
+    async def fetch_post_comments(self, sub: str, post_id: str, limit: int = 20) -> list[Comment]:
+        try:
+            async with httpx.AsyncClient() as client:
+                userHeaders = {
+                    "User-Agent": f"Python:simple-scraper:v1.0 (by /u/{os.getenv("USERNAME")})",
+                    "Authorization" : f"Bearer {Scraper.access_token}"
+                }
+
+                url = f"{Scraper.baseURL}/r/{str(sub)}/comments/{post_id}?limit={limit}"
+                print(url)
+                response = await client.get(url=url, headers=userHeaders)
+
+                if response.status_code != 200:
+                    raise RequestError(f"Request status not OK: {response.status_code}")
+                
+                data = response.json()
+                comment_res = data.pop()["data"]["children"]
+
+                comments = [ Comment(id=comment["data"]["id"], author=comment["data"]["author"], body=comment["data"]["body"], upvotes=comment["data"]["score"], downvotes=comment["data"]["downs"],sub=comment["data"]["subreddit"]) for comment in comment_res]
+
+                return comments
+            
+        except Exception as e:
+            import traceback
+            print(f"Error fetching comments: {e}")
+            traceback.print_exc()
+            return str(e)
+
+
+
+
+
+
+
+
+
 # async def main():
 #     try:
 #         scraper = Scraper("123")
 #         print(scraper.status)
-#         await Scraper.fetch_access_token()
-#         await scraper.fetch_posts("Python")
+#         await Scraper.generate_token()
+#         comments: list[Comment] = await scraper.fetch_post_comments("python", "1lhbsgi")
+#         for comment in comments:
+#             print(comment.format_comment_str())
+#             print("\n===========================\n")
 #     except Exception as e:
 #         print(f"Some error occured:\n{e}")
      

@@ -1,7 +1,8 @@
 from mcp.server.fastmcp import FastMCP
 from typing import Any
 from reddit_scraper.scraper import Scraper
-from reddit_scraper.post import Post
+from reddit_scraper.structures.post import Post
+from reddit_scraper.structures.comment import Comment
 from nltk import word_tokenize
 from nltk.probability import FreqDist
 
@@ -22,6 +23,10 @@ class MCPServer:
             name="extract_keywords",
             description="Extracts trending keywords from the provided posts"
         )(self.extract_keywords)
+        self.mcp.tool(
+            name="get_post_comments",
+            description="Get comments of a specific post."
+        )(self.get_post_comments)
 
     # main running server method
     def run(self):
@@ -63,7 +68,7 @@ class MCPServer:
                     limit = 10
                 
             posts = await self.scraper.fetch_posts(sub, str(sort), int(limit))
-            if posts is list[Post]:
+            if posts is not list[Post]:
                 return "Error occured while fetching posts"
             
             postStr = []
@@ -126,7 +131,29 @@ class MCPServer:
             print(f"some error occured: {e}")
             traceback.print_exc()
             return str(e)
-        pass
-
-
         
+    async def get_post_comments(self, sub: str, post_id: str, limit: int = 20) :
+        """
+        Retrieve and format comments from a specific Reddit post.
+
+        This tool fetches a specified number of top-level comments from a Reddit post
+        within a given subreddit. It returns the comments as a readable formatted string.
+
+        Args:
+            sub (str): The name of the subreddit where the post is located (without the 'r/' prefix).
+            post_id (str): The unique ID of the Reddit post to retrieve comments from.
+            limit (int, optional): The number of top-level comments to fetch. Defaults to 20.
+
+        Returns:
+            str: A formatted string containing the list of retrieved comments.
+        """
+        if len(sub.split("/")) > 1:
+            sub = sub.split("/").pop()
+
+        comments: list[Comment] = await self.scraper.fetch_post_comments(sub, post_id, limit)
+
+        if comments is not list[Comment]:
+            return "Error fetching the comments" 
+
+        return "\n---\n".join([comment.format_comment_str() for comment in comments])
+
