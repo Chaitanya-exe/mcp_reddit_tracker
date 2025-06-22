@@ -43,14 +43,14 @@ class Scraper:
                 print(f"Error fetching token: {e}")
     
     # fetches top posts from a mentioned subreddit
-    async def fetch_posts(self, sub: str) -> list[Post] | str:
+    async def fetch_posts(self, sub: str,  sort: str = "top", limit: int = 15) -> list[Post] | str:
         async with httpx.AsyncClient() as client:
             userHeaders = {
                 "User-Agent": f"Python:simple-scraper:v1.0 (by /u/{os.getenv("USERNAME")})",
                 "Authorization" : f"Bearer {Scraper.access_token}"
             }
             try:
-                response = await client.get(f"{Scraper.baseURL}/r/{sub}/top/", headers=userHeaders)
+                response = await client.get(f"{Scraper.baseURL}/r/{sub}/{sort}?limit={limit}", headers=userHeaders)
 
                 if response.status_code != 200:
                     print("Problem fetching posts")
@@ -66,10 +66,8 @@ class Scraper:
                     # print(f"content:\n{post["data"]["selftext"]}")
                     # print("==============================\n\n")
                     postData = post["data"]
-                    id, title, content, upvotes, downvotes = postData["id"], postData["title"], postData["selftext"], postData["score"], postData["downs"]
-                    posts.append(Post(id, title, content, upvotes, downvotes))
-                
-                print(f"{len(posts)} Post objects created")
+                    id, title, content, upvotes, downvotes, url = postData["id"], postData["title"], postData["selftext"], postData["score"], postData["downs"], postData["url"]
+                    posts.append(Post(id, title, content, upvotes, downvotes, url))
 
                 return posts
 

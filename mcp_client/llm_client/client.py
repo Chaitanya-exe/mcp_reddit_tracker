@@ -43,6 +43,8 @@ class LLMClient:
 
             tool_calls = response["message"].get("tool_calls", [])
 
+            print(tool_calls)
+
             if not tool_calls:
                 return response["message"]["content"]
             
@@ -74,7 +76,9 @@ class LLMClient:
                 ],
                 stream=True
             ):
-                print(f"{chunk["message"]["content"]}", end="")                
+                print(f"{chunk["message"]["content"]}", end="") 
+
+            print("\n\n")               
 
 
         except Exception as e:

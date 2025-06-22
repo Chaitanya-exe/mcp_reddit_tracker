@@ -14,7 +14,7 @@ async def main():
         env = {**os.environ, "PYTHONUNBUFFERED": "1"}
         
         params = StdioServerParameters(
-            command=server_python,
+            command="../mcp_server/.venv/bin/python",
             args=[server_path],
             env=env
         )
