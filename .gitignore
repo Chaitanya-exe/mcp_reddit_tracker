@@ -4,4 +4,4 @@ mcp_server/.env
 mcp_client/.env
 mcp_client/*/__pycache__/
 mcp_server/*/__pycache__/
-mcp_server/*/structures/__pycache__/
+mcp_server/reddit_scraper/structures/__pycache__/
